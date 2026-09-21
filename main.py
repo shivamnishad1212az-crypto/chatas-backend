@@ -66,6 +66,7 @@ ABOUT_STUDENT = """
 {
   "profile": {
     "name": "Shivam Nishad",
+    "age":"twenty-one",
     "location": "Kanpur,uttar pradesh, India",
     "occupation": "Student ",
     "bio": "A student pursuing a Bachelor's degree in Computer Science and Engineering (CSE), based in Kanpur. Passionate about coding and currently learning a new language."
