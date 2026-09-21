@@ -17,6 +17,7 @@ Then point the frontend's API_URL at http://localhost:8000/api/ask
 import json
 import os
 import re
+import time
 from typing import List
 
 from google import genai
@@ -137,18 +138,37 @@ def ask(payload: AskRequest):
     if not question:
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
 
-    try:
-        response = client.models.generate_content(
-            model=MODEL,
-            contents=question,
-            config=types.GenerateContentConfig(
-                system_instruction=build_system_prompt(subject),
-                max_output_tokens=1024,
-                response_mime_type="application/json",
-            ),
+    response = None
+    last_error = None
+    max_attempts = 4
+    for attempt in range(max_attempts):
+        try:
+            response = client.models.generate_content(
+                model=MODEL,
+                contents=question,
+                config=types.GenerateContentConfig(
+                    system_instruction=build_system_prompt(subject),
+                    max_output_tokens=1024,
+                    response_mime_type="application/json",
+                ),
+            )
+            break  # success, stop retrying
+        except Exception as e:
+            last_error = e
+            # 503 UNAVAILABLE / high demand is transient -- wait a bit and retry.
+            # Anything else, fail fast.
+            if "503" in str(e) or "UNAVAILABLE" in str(e):
+                if attempt < max_attempts - 1:
+                    time.sleep(2 * (attempt + 1))  # 2s, 4s, 6s backoff
+                    continue
+            raise HTTPException(status_code=502, detail=f"AI service error: {str(e)}")
+
+    if response is None:
+        raise HTTPException(
+            status_code=502,
+            detail=f"AI service is overloaded right now, even after retrying. "
+            f"Please try again shortly. ({str(last_error)})",
         )
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {str(e)}")
 
     raw_text = response.text or ""
 
