@@ -1,0 +1,104 @@
+/* ---------- #try section ---------- */
+/* Append this to the end of style2.css. Colors match the dark hero/header
+   theme (body background #1d1d18, light text) rather than the light-theme
+   defaults used by the later sections, so it won't clash with the hero. */
+
+.try-it {
+  padding: 4rem 1.5rem;
+}
+.try-container {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+.try-container h2 {
+  font-family: Arial, sans-serif;
+  font-size: 1.75rem;
+  color: #f7f3f3;
+  margin-bottom: 0.5rem;
+}
+.try-subhead {
+  font-family: Arial, sans-serif;
+  color: #cdd6f4;
+  margin-bottom: 2rem;
+}
+
+.ask-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.subject-select {
+  align-self: flex-start;
+  background: #2a2a24;
+  color: #f7f3f3;
+  border: 1px solid #6b6b5f;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-family: Arial, sans-serif;
+  font-size: 0.9rem;
+}
+
+.question-input {
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  background: #2a2a24;
+  color: #f7f3f3;
+  border: 1px solid #6b6b5f;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+.question-input::placeholder {
+  color: #9a9a8c;
+}
+.question-input:focus,
+.subject-select:focus {
+  outline: 2px solid #7f5af0;
+  outline-offset: 2px;
+}
+
+.ask-submit {
+  align-self: flex-start;
+  background-color: #7f5af0;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.ask-submit:hover:not(:disabled) {
+  background-color: #6a46d6;
+}
+.ask-submit:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+/* Reuse .chat-mock / .chat-bubble / .user-bubble / .bot-bubble / .bot-label /
+   .reasoning-steps / .bot-followup from the #example section — but the
+   bot-bubble below was styled for a light page. Override it for the dark
+   theme here since #try sits right under the dark hero. */
+#try .bot-bubble {
+  background: #2a2a24;
+  color: #f7f3f3;
+}
+#try .bot-followup {
+  color: #cdd6f4;
+}
+
+@media (max-width: 480px) {
+  .ask-submit,
+  .subject-select {
+    width: 100%;
+  }
+}

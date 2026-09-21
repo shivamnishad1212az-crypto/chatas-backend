@@ -1,0 +1,163 @@
+<!--
+  WHERE TO PUT THIS:
+  Insert this <section id="try"> inside your <main>, right after the .hero
+  section and before #how. It's what all your "Ask a question" /
+  "Ask your first question" / "Get started" links are pointing to.
+
+  The <script> at the bottom can go right before </body>.
+-->
+
+<section id="try" class="try-it">
+  <div class="try-container">
+    <h2>Try it now</h2>
+    <p class="try-subhead">Ask a real question — Satchel will show its reasoning below.</p>
+
+    <form id="ask-form" class="ask-form">
+      <select id="subject-select" class="subject-select" aria-label="Subject">
+        <option value="general">General</option>
+        <option value="math">Math</option>
+        <option value="science">Science</option>
+        <option value="languages">Languages</option>
+        <option value="history">History</option>
+      </select>
+
+      <textarea
+        id="question-input"
+        class="question-input"
+        placeholder="e.g. Why does dividing by a fraction flip it?"
+        maxlength="1500"
+        required
+      ></textarea>
+
+      <button type="submit" class="ask-submit">Ask Satchel</button>
+    </form>
+
+    <div id="chat-output" class="chat-mock" aria-live="polite"></div>
+  </div>
+</section>
+
+<script>
+(function () {
+  // Change this to your deployed backend's URL once it's live.
+  const API_URL = "http://localhost:8000/api/ask";
+
+  const form = document.getElementById("ask-form");
+  const input = document.getElementById("question-input");
+  const subjectSelect = document.getElementById("subject-select");
+  const output = document.getElementById("chat-output");
+  const submitBtn = form.querySelector(".ask-submit");
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const question = input.value.trim();
+    if (!question) return;
+
+    appendUserBubble(question);
+    input.value = "";
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Thinking…";
+
+    const loadingEl = appendLoadingBubble();
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: question,
+          subject: subjectSelect.value,
+        }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.detail || "Request failed");
+      }
+
+      const data = await res.json();
+      loadingEl.remove();
+      appendBotBubble(data);
+    } catch (err) {
+      loadingEl.remove();
+      appendErrorBubble();
+      console.error("Ask request failed:", err);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Ask Satchel";
+    }
+  });
+
+  function appendUserBubble(text) {
+    const div = document.createElement("div");
+    div.className = "chat-bubble user-bubble";
+    const p = document.createElement("p");
+    p.textContent = text; // textContent, not innerHTML — avoids injecting HTML
+    div.appendChild(p);
+    output.appendChild(div);
+    output.scrollTop = output.scrollHeight;
+  }
+
+  function makeBotShell(introText) {
+    const div = document.createElement("div");
+    div.className = "chat-bubble bot-bubble";
+
+    const label = document.createElement("div");
+    label.className = "bot-label";
+    const img = document.createElement("img");
+    img.src = "site-icon.jpg";
+    img.alt = "Satchel";
+    const span = document.createElement("span");
+    span.textContent = "Satchel";
+    label.appendChild(img);
+    label.appendChild(span);
+    div.appendChild(label);
+
+    const intro = document.createElement("p");
+    intro.className = "bot-intro";
+    intro.textContent = introText;
+    div.appendChild(intro);
+
+    return div;
+  }
+
+  function appendLoadingBubble() {
+    const div = makeBotShell("Thinking through it…");
+    output.appendChild(div);
+    output.scrollTop = output.scrollHeight;
+    return div;
+  }
+
+  function appendBotBubble(data) {
+    const div = makeBotShell(data.intro || "Here's the reasoning:");
+
+    if (Array.isArray(data.steps) && data.steps.length) {
+      const ol = document.createElement("ol");
+      ol.className = "reasoning-steps";
+      data.steps.forEach(function (step) {
+        const li = document.createElement("li");
+        li.textContent = step;
+        ol.appendChild(li);
+      });
+      div.appendChild(ol);
+    }
+
+    if (data.followup) {
+      const followup = document.createElement("p");
+      followup.className = "bot-followup";
+      followup.textContent = data.followup;
+      div.appendChild(followup);
+    }
+
+    output.appendChild(div);
+    output.scrollTop = output.scrollHeight;
+  }
+
+  function appendErrorBubble() {
+    const div = makeBotShell(
+      "Something went wrong reaching the server — please try again in a moment."
+    );
+    output.appendChild(div);
+    output.scrollTop = output.scrollHeight;
+  }
+})();
+</script>
