@@ -66,13 +66,13 @@ ABOUT_STUDENT = """
 {
   "profile": {
     "name": "Shivam Nishad",
-    "location": "Kanpur, India",
-    "occupation": "Student",
+    "location": "Kanpur,uttar pradesh, India",
+    "occupation": "Student ",
     "bio": "A student pursuing a Bachelor's degree in Computer Science and Engineering (CSE), based in Kanpur. Passionate about coding and currently learning a new language."
   },
   "background": {
     "education": [
-      { "degree": "Bachelor's", "field": "Computer Science and Engineering (CSE)" }
+      { "degree": "Bachelor's", "field": "Computer Science and Engineering (CSE)","college": "maharan pratap engineering college" }
     ]
   },
   "interests": {
