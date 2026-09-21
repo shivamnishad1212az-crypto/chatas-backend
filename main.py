@@ -141,8 +141,7 @@ def ask(payload: AskRequest):
         response = client.models.generate_content(
             model=MODEL,
             contents=question,
-            config=types.GenerateContentConfig(
-                system_instruction=build_system_prompt(subject),
+            config=types.GenerateContentConfig( system_instruction=build_system_prompt(subject), max_output_tokens=1024, response_mime_type="application/json", ),
                 max_output_tokens=800,
             ),
         )
