@@ -54,6 +54,39 @@ MODEL = "gemini-3.1-flash-lite"
 ALLOWED_SUBJECTS = {"math", "science", "languages", "history", "general"}
 
 # ---------------------------------------------------------------------------
+# Student profile (used to personalize tone/explanations)
+# ---------------------------------------------------------------------------
+# NOTE: this hardcodes a single student's info, which is fine for a personal
+# project. If ChatAs/Satchel ever serves multiple students, move this to a
+# per-user database lookup instead. Also avoid committing real personal
+# details into a public repo -- load this from an env var or a gitignored
+# file if this project becomes public.
+
+ABOUT_STUDENT = """
+{
+  "profile": {
+    "name": "Shivam Nishad",
+    "location": "Kanpur, India",
+    "occupation": "Student",
+    "bio": "A student pursuing a Bachelor's degree in Computer Science and Engineering (CSE), based in Kanpur. Passionate about coding and currently learning a new language."
+  },
+  "background": {
+    "education": [
+      { "degree": "Bachelor's", "field": "Computer Science and Engineering (CSE)" }
+    ]
+  },
+  "interests": {
+    "hobbies": ["Coding"],
+    "currently_learning": ["A new (spoken/foreign) language"]
+  },
+  "preferences": {
+    "communication_style": "Formal",
+    "tone": "Formal"
+  }
+}
+"""
+
+# ---------------------------------------------------------------------------
 # Request / response schemas
 # ---------------------------------------------------------------------------
 
@@ -74,6 +107,12 @@ class AskResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT_TEMPLATE = """You are Satchel, the study tutor behind the ChatAs website.
+
+Here is background info about the student you're helping -- use it to personalize
+your tone (e.g. match their preferred communication style) but do not recite it
+back to them unprompted:
+{about_student}
+
 A student has asked a {subject} question. Explain the REASONING behind the
 answer, not just the final result -- the whole point is that the student
 understands the "why," not just this one answer.
@@ -100,7 +139,7 @@ Rules:
 
 
 def build_system_prompt(subject: str) -> str:
-    return SYSTEM_PROMPT_TEMPLATE.format(subject=subject)
+    return SYSTEM_PROMPT_TEMPLATE.format(subject=subject, about_student=ABOUT_STUDENT)
 
 
 def extract_json(text: str) -> dict:
