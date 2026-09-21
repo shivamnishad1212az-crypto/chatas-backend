@@ -1,14 +1,14 @@
 """
-ChatAs / Satchel backend
--------------------------
+ChatAs / Satchel backend (Gemini version)
+-------------------------------------------
 One endpoint: POST /api/ask
-Takes a student's question (+ optional subject), asks Claude to explain
+Takes a student's question (+ optional subject), asks Gemini to explain
 the *reasoning* (not just the answer), and returns it as structured JSON
 that the frontend renders as a chat bubble.
 
 Run locally:
     pip install -r requirements.txt
-    export ANTHROPIC_API_KEY=sk-ant-...      (or put it in a .env file, see below)
+    export GEMINI_API_KEY=AIzaSy...      (or put it in a .env file)
     uvicorn main:app --reload --port 8000
 
 Then point the frontend's API_URL at http://localhost:8000/api/ask
@@ -19,7 +19,8 @@ import os
 import re
 from typing import List
 
-import anthropic
+from google import genai
+from google.genai import types
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -40,15 +41,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-api_key = os.environ.get("ANTHROPIC_API_KEY")
+api_key = os.environ.get("GEMINI_API_KEY")
 if not api_key:
     # We don't crash on import (so the server can still start for local testing
     # of non-AI routes), but /api/ask will fail clearly if this is missing.
-    print("WARNING: ANTHROPIC_API_KEY is not set. /api/ask will fail until it is.")
+    print("WARNING: GEMINI_API_KEY is not set. /api/ask will fail until it is.")
 
-client = anthropic.Anthropic(api_key=api_key)
+client = genai.Client(api_key=api_key) if api_key else None
 
-MODEL = "claude-sonnet-4-6"
+MODEL = "gemini-2.0-flash"
 ALLOWED_SUBJECTS = {"math", "science", "languages", "history", "general"}
 
 # ---------------------------------------------------------------------------
@@ -102,7 +103,7 @@ def build_system_prompt(subject: str) -> str:
 
 
 def extract_json(text: str) -> dict:
-    """Claude is instructed to return raw JSON, but strip code fences defensively
+    """Gemini is instructed to return raw JSON, but strip code fences defensively
     in case it wraps the response in ```json ... ``` anyway."""
     cleaned = text.strip()
     cleaned = re.sub(r"^```(json)?", "", cleaned).strip()
@@ -122,10 +123,10 @@ def health():
 
 @app.post("/api/ask", response_model=AskResponse)
 def ask(payload: AskRequest):
-    if not api_key:
+    if not client:
         raise HTTPException(
             status_code=500,
-            detail="Server is missing its ANTHROPIC_API_KEY. Set it and restart.",
+            detail="Server is missing its GEMINI_API_KEY. Set it and restart.",
         )
 
     subject = payload.subject.lower().strip()
@@ -137,18 +138,18 @@ def ask(payload: AskRequest):
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
 
     try:
-        response = client.messages.create(
+        response = client.models.generate_content(
             model=MODEL,
-            max_tokens=800,
-            system=build_system_prompt(subject),
-            messages=[{"role": "user", "content": question}],
+            contents=question,
+            config=types.GenerateContentConfig(
+                system_instruction=build_system_prompt(subject),
+                max_output_tokens=800,
+            ),
         )
-    except anthropic.APIStatusError as e:
-        raise HTTPException(status_code=502, detail=f"AI service error: {e.message}")
-    except anthropic.APIError as e:
+    except Exception as e:
         raise HTTPException(status_code=502, detail=f"AI service error: {str(e)}")
 
-    raw_text = "".join(block.text for block in response.content if block.type == "text")
+    raw_text = response.text or ""
 
     try:
         parsed = extract_json(raw_text)
