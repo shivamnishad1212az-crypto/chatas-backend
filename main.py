@@ -50,7 +50,7 @@ if not api_key:
 
 client = genai.Client(api_key=api_key) if api_key else None
 
-MODEL = "gemini-3.6-flash"
+MODEL = "gemini-3.1-flash-lite"
 ALLOWED_SUBJECTS = {"math", "science", "languages", "history", "general"}
 
 # ---------------------------------------------------------------------------
