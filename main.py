@@ -86,7 +86,15 @@ ABOUT_STUDENT = """
   }
 }
 """
-
+ABOUT_FRIENDS = """
+{
+"name": "shreyansh tiwari",
+"age":" "ninteen",
+"location": "gb road delhi",
+"occupation":"chindi giri",
+"bio":"a student of mpec and best friend of sameer"
+}
+"""
 # ---------------------------------------------------------------------------
 # Request / response schemas
 # ---------------------------------------------------------------------------
