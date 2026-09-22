@@ -83,18 +83,17 @@ ABOUT_STUDENT = """
   "preferences": {
     "communication_style": "Formal",
     "tone": "Formal"
-  }
-}
-"""
-ABOUT_FRIENDS = """
-{
+  },
+ "classmate": {
 "name": "shreyansh tiwari",
 "age":" "ninteen",
 "location": "gb road delhi",
 "occupation":"chindi giri",
 "bio":"a student of mpec and best friend of sameer"
 }
+}
 """
+
 # ---------------------------------------------------------------------------
 # Request / response schemas
 # ---------------------------------------------------------------------------
